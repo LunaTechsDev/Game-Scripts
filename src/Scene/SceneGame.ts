@@ -9,6 +9,8 @@
         http://rpg-paper-maker.com/index.php/eula.
 */
 
+import EventEmitter from "eventemitter3";
+
 /** @class
  *   Abstract class for the game stack
  *   @property {ReactionInterpreter[]} reactionInterpreters The reaction
@@ -16,13 +18,18 @@
  *   @property {EventCommand[]} parallelCommands Commands that are still running
  *   without blocking any other command
  *   @property {boolean} loading Indicate if the scene is loading
+ *   @property {EventEmitter} emitter for sending events to the scene.
  *   @param {boolean} [loading=true] Indicate if the scene should load async
  *   stuff
  */
 class SceneGame {
+
+   public emitter:EventEmitter
+
     constructor(loading = true) {
         this.reactionInterpreters = new Array;
         this.parallelCommands = new Array;
+        this.emitter = new EventEmitter()
         if (loading) {
             this.loading = true;
             RPM.tryCatch(this.load());
@@ -34,12 +41,14 @@ class SceneGame {
      */
     async load() {
         this.loading = false;
+        this.emitter.emit('load', this)
     }
 
     // -------------------------------------------------------
     /** Update all the reactions interpreters
      */
     updateInterpreters() {
+        this.emitter.emit('updateInterpreters', this)
         // Index of all the finished parallel reactions
         let endingReactions = new Array;
 
@@ -77,6 +86,7 @@ class SceneGame {
     /** Update all the parallel commands
      */
     updateParallelCommands() {
+        this.emitter.emit('updateParallelCommands', this)
         let endingCommands = new Array; // Index of all the finished commands
         let i, l, previousCommand, command;
         for (i = 0, l = this.parallelCommands.length; i < l; i++) {
@@ -139,6 +149,7 @@ class SceneGame {
 
         // Parallel comands
         SceneGame.prototype.updateParallelCommands.call(this);
+        this.emitter.emit('update', this)
     }
 
     // -------------------------------------------------------
@@ -208,6 +219,6 @@ class SceneGame {
     /** Close the scene
      */
     close() {
-
+        this.emitter.emit('close', this)
     }
 }

@@ -27,5 +27,8 @@
   },
   "env": {
     "ELECTRON_NO_ASAR": null
+  },
+  "dependencies": {
+    "eventemitter3": "^4.0.7"
   }
 }
